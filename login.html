@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | BBB</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --card-bg: #121212;
+            --primary-red: #8b0000;
+            --text-main: #ffffff;
+            --text-secondary: #a0a0a0;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 20% 35%, rgba(139, 0, 0, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 65%, rgba(139, 0, 0, 0.1) 0%, transparent 40%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+            overflow: hidden;
+        }
+
+        /* CARD DE LOGIN */
+        .login-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 50px 40px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            animation: cardAppear 0.8s ease-out forwards;
+            
+            /* <<< ADICIONE ESTAS DUAS LINHAS PARA DIMINUIR A ESCALA >>> */
+            transform: scale(0.9); /* 0.9 = 90% do tamanho original. Experimente 0.95 para algo mais sutil. */
+            transform-origin: center center; /* Garante que a redução seja centralizada */
+            /* <<< FIM DAS LINHAS ADICIONADAS >>> */
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
+        }
+
+        .logo span {
+            color: var(--primary-red);
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 40px;
+            line-height: 1.5;
+        }
+
+        /* BOTÃO DO GOOGLE PERSONALIZADO */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            background-color: #ffffff;
+            color: #1f1f1f;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .google-btn:hover {
+            background-color: #f1f1f1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .google-btn:active {
+            transform: translateY(0);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* RODAPÉ DO CARD */
+        .footer-link {
+            margin-top: 30px;
+            display: block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--text-main);
+        }
+
+        /* BOTÃO VOLTAR */
+        .back-btn {
+            position: absolute; /* 'position' é necessário para z-index funcionar */
+            top: 30px;
+            left: 30px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            z-index: 100; /* <<< ADICIONE ESTA LINHA >>> */
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            transform: translateX(-5px);
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 480px) {
+            .login-card {
+                max-width: 90%;
+                padding: 40px 25px;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+            }
+            body {
+                background-image: none;
+            }
+        }
+        
+        
+        
+                    /* >>>>> NOVO CÓDIGO CSS DO MODAL COMEÇA AQUI <<<<< */
+
+            .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.7); /* Fundo escuro semitransparente */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 2000; /* Acima de tudo, inclusive do menu lateral */
+                opacity: 0; /* Escondido por padrão */
+                visibility: hidden; /* Escondido por padrão */
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .modal-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+
+    .modal-content {
+        background-color: var(--bg-color);
+        border-radius: 12px;
+        padding: 30px;
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+        
+        /* LINHAS DE ANIMAÇÃO ATUALIZADAS AQUI */
+        transform: scale(0.95); /* Começa um pouco menor */
+        opacity: 0; /* Começa invisível */
+        /* Transição de entrada mais rápida e dinâmica */
+        transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.1s ease-out; 
+    }
+
+            .modal-overlay.active .modal-content {
+        transform: scale(1); /* Volta ao tamanho normal */
+        opacity: 1; /* Fica visível */
+    }
+
+            .modal-close-btn {
+                position: absolute;
+                top: 15px;
+                right: 20px;
+                background: none;
+                border: none;
+                color: var(--text-secondary);
+                font-size: 2rem;
+                cursor: pointer;
+                transition: color 0.2s ease;
+            }
+
+            .modal-close-btn:hover {
+                color: var(--text-main);
+            }
+
+            #modalTitle {
+                font-size: 1.8rem;
+                font-weight: 700;
+                margin-bottom: 15px;
+                color: var(--text-main);
+            }
+
+            #modalMessage {
+                font-size: 0.95rem;
+                line-height: 1.5;
+                color: var(--text-secondary);
+                margin-bottom: 30px;
+            }
+
+            .modal-action-btn {
+                background-color: #e50914; /* Vermelho vibrante similar ao da Globoplay */
+                color: #ffffff;
+                border: none;
+                padding: 14px 35px;
+                border-radius: 8px;
+                font-weight: 700;
+                font-size: 1rem;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+                width: 100%; /* Botão em largura total */
+                max-width: 300px; /* Limite para não ficar muito largo em desktop */
+            }
+
+            .modal-action-btn:hover {
+                background-color: #ff0015; /* Um vermelho um pouco mais claro no hover */
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+            }
+
+        /* Animação para quando o modal está saindo */
+        @keyframes modalFadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+    .modal-overlay.hiding .modal-content {
+        /* Animação de saída mais rápida */
+        animation: modalFadeOut 0.1s ease-in forwards; 
+    }
+        
+        
+        
+                /* ... Seus estilos CSS do modal existente terminam aqui ... */
+
+        
+        
+        
+        
+                /* Adicione estes novos estilos e classes ao seu bloco <style> */
+        /* INPUT FIELDS */
+       .input-field {
+            width: 100%;
+            padding: 14px 18px;
+            margin-bottom: 15px; /* Adicionei margem inferior */
+            border: 1px solid var(--glass-border);
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.05); /* Um fundo sutil */
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+       .input-field::placeholder {
+            color: var(--text-secondary);
+        }
+
+       .input-field:focus {
+            outline: none;
+            border-color: var(--primary-red);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* BOTÕES DE AÇÃO GERAIS (Entrar, Cadastrar) */
+       .action-button {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-red);
+            color: var(--text-main);
+            border: none;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            margin-top: 10px; /* Adicionado para separar do input */
+        }
+
+       .action-button:hover {
+            background-color: #a00000; /* Vermelho um pouco mais escuro */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+        }
+
+       .action-button:active {
+            transform: translateY(0);
+        }
+
+        /* DIVISOR "OU" */
+       .divider {
+            color: var(--text-secondary);
+            margin: 25px 0;
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+       .divider::before,
+       .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%; /* Ajuste a largura das linhas */
+            height: 1px;
+            background-color: var(--glass-border);
+        }
+
+       .divider::before {
+            left: 0;
+        }
+
+       .divider::after {
+            right: 0;
+        }
+
+        /* ABA SWITCHER (ENTRAR/CADASTRAR) */
+       .tab-switcher {
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+       .tab-btn {
+            flex: 1;
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+       .tab-btn.active {
+            background-color: var(--primary-red);
+            color: var(--text-main);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* CONTEÚDO DAS ABAS */
+       .tab-content {
+            display: none; /* Esconde todos por padrão */
+            animation: fadeIn 0.4s ease-out;
+            /* Os títulos h1 e p serão estilizados globalmente */
+        }
+
+       .tab-content.active {
+            display: block; /* Mostra o ativo */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ESTILO PARA MENSAGENS DE ERRO/SUCESSO */
+        #message-display {
+            display: none; /* Escondido por padrão */
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        #message-display.error {
+            background-color: rgba(139, 0, 0, 0.2);
+            color: var(--primary-red);
+            border: 1px solid var(--primary-red);
+        }
+
+        #message-display.success {
+            background-color: rgba(0, 128, 0, 0.2);
+            color: #008000;
+            border: 1px solid #008000;
+        }
+
+        /* AJUSTES GERAIS - SUBSTITUA OU ADICIONE */
+       .login-card h1 { /* Para os h1 dentro do card */
+            font-size: 1.5rem; /* Um pouco maior que o padrão */
+            margin-bottom: 15px;
+        }
+       .login-card p { /* Para os p dentro do card */
+            margin-bottom: 25px; /* Mais espaço */
+        }
+        
+        /* Ajuste do botão Google para alinhar com os novos botões */
+       .google-btn { /* Ajustar esta regra já existente */
+            padding: 14px 20px; /* Garante o mesmo padding dos action-button */
+            margin-top: 10px; /* Adicionado para separar do divider */
+        }
+        
+                /* Estilos para o container do campo de senha e o olhinho */
+        .password-input-container {
+            position: relative; /* Essencial para posicionar o ícone absolutamente */
+            margin-bottom: 15px; /* Mantém o espaçamento entre campos */
+        }
+
+        .password-input-container .input-field {
+            padding-right: 45px; /* Adiciona espaço para o ícone */
+            margin-bottom: 0; /* Remove a margem inferior do input, pois o container já tem */
+        }
+
+        .password-toggle-icon {
+            position: absolute;
+            right: 15px; /* Ajusta a posição à direita */
+            top: 50%;
+            transform: translateY(-50%); /* Centraliza verticalmente */
+            cursor: pointer;
+            color: var(--text-secondary); /* Cor do ícone */
+            transition: color 0.2s ease;
+            display: flex; /* Para centralizar o SVG */
+            align-items: center;
+            justify-content: center;
+        }
+
+        .password-toggle-icon:hover {
+            color: var(--text-main); /* Muda a cor ao passar o mouse */
+        }
+
+        .password-toggle-icon svg {
+            width: 20px; /* Tamanho do ícone */
+            height: 20px;
+        }
+
+        /* Estilo para quando o olhinho estiver "fechado" (senha oculta) */
+        .password-toggle-icon.hide-password svg path:first-child {
+            /* Adiciona uma linha simulando o "olho cortado" */
+            stroke-dasharray: 20 20; /* Ajuste se o SVG for diferente */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        .password-toggle-icon.hide-password svg path:nth-child(2) {
+            /* Esconde a pupila */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        /* Para o ícone de "olho cortado" (feather-eye-off), se quiser usar:
+        .password-toggle-icon.hide-password svg.feather-eye { display: none; }
+        .password-toggle-icon.hide-password svg.feather-eye-off { display: block; } */
+        
+    </style>
+    
+    <!-- ... suas tags meta e title ... -->
+            <!-- Adicionar os SDKs do Firebase -->
+            <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+            <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+        
+</head>
+<body>
+
+    <a href="#" class="back-btn" onclick="history.back()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Voltar
+    </a>
+
+<div class="login-card">
+    <div class="logo">BBB<span> AO VIVO</span></div>
+
+    <!-- Alternador de Abas (Entrar / Cadastrar) -->
+    <div class="tab-switcher">
+        <button id="login-tab-btn" class="tab-btn active" onclick="showTab('login')">Entrar</button>
+        <button id="register-tab-btn" class="tab-btn" onclick="showTab('register')">Cadastrar</button>
+    </div>
+
+    <!-- Conteúdo da Aba "Entrar" -->
+    <div id="login-section" class="tab-content active">
+        <h1>Faça Login para acessar o chat!</h1>
+
+        <!-- CAMPOS PARA LOGIN COM E-MAIL E SENHA -->
+        <input type="email" id="login-email" class="input-field" placeholder="Seu e-mail" required>
+        <div class="password-input-container"> <!-- NOVO CONTAINER -->
+            <input type="password" id="login-password" class="input-field password-field" placeholder="Sua senha" required>
+            <span class="password-toggle-icon" onclick="togglePasswordVisibility('login-password', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+        </div>
+        
+        <button class="action-button" onclick="handleEmailLogin()">Entrar</button>
+
+        <div class="divider">OU</div>
+
+        <!-- SEU BOTÃO DE LOGIN COM GOOGLE EXISTENTE -->
+        <button class="google-btn" id="google-login-btn">
+            <svg class="google-icon" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                <path fill="none" d="M0 0h48v48H0z"></path>
+            </svg>
+            Entrar com Google
+        </button>
+    </div>
+
+    <!-- Conteúdo da Aba "Cadastrar" -->
+    <div id="register-section" class="tab-content">
+        <h1>Crie sua conta para acessar!</h1>
+
+
+        <!-- CAMPOS PARA CADASTRO COM E-MAIL E SENHA -->
+        <input type="text" id="register-name" class="input-field" placeholder="Seu nome no chat" required>
+        <input type="email" id="register-email" class="input-field" placeholder="Seu e-mail" required>
+        <div class="password-input-container"> <!-- NOVO CONTAINER -->
+            <input type="password" id="register-password" class="input-field password-field" placeholder="Crie sua senha (min. 6 caracteres)" required>
+            <span class="password-toggle-icon" onclick="togglePasswordVisibility('register-password', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+        </div>
+        
+        <button class="action-button" onclick="handleEmailRegister()">Cadastrar</button>
+
+        <div class="divider">OU</div>
+        
+        <!-- BOTÃO DE LOGIN COM GOOGLE REPETIDO PARA CADASTRO (opcional, mas comum para ux) -->
+        <button class="google-btn" id="google-register-btn">
+            <svg class="google-icon" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                <path fill="none" d="M0 0h48v48H0z"></path>
+            </svg>
+            Cadastrar com Google
+        </button>
+    </div>
+
+    <!-- Espaço para Mensagens de Erro/Sucesso (global para ambas as seções) -->
+    <p id="message-display" class="error"></p>
+
+    <a href="#" class="footer-link">Precisa de ajuda para acessar?</a>
+</div>
+    
+    
+            <!-- >>>>> BLOCO HTML DO MODAL PARA LOGIN.HTML (APENAS CONTEÚDO GENÉRICO) <<<<< -->
+        <div id="modal" class="modal-overlay">
+            <div class="modal-content">
+                <!-- Botão de fechar o modal -->
+                <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+
+                <!-- CONTEÚDO GENÉRICO DO MODAL -->
+                <div id="genericModalContent">
+                    <h2 id="modalTitle"></h2>
+                    <p id="modalMessage"></p>
+                    <button class="modal-action-btn" id="modalActionButton">OK</button> <!-- O texto do botão pode ser "OK" ou "Continuar" -->
+                </div>
+
+                <!--
+                    A div #helpAccordionContent NÃO é necessária aqui no login.html,
+                    pois este modal será usado apenas para mensagens simples (sucesso/erro).
+                    Deixamos ela de fora para o HTML ficar mais limpo.
+                -->
+            </div>
+        </div>
+        <!-- >>>>> FIM DO BLOCO HTML DO MODAL PARA LOGIN.HTML <<<<< -->
+    
+    
+    <script>
+        // COLOQUE O CÓDIGO DE CONFIGURAÇÃO DO FIREBASE AQUI
+        // Este é um EXEMPLO. SUBSTITUA pelos seus dados do Firebase Console!
+        const firebaseConfig = {
+            apiKey: "AIzaSyBfwC-5l8fPCvcgrwao9pG7gj9TmOuvLcU", // ESTAS SÃO AS NOVAS INFOS
+            authDomain: "bbb-ao-vivo2.firebaseapp.com",
+            databaseURL: "https://bbb-ao-vivo2-default-rtdb.firebaseio.com",
+            projectId: "bbb-ao-vivo2",
+            storageBucket: "bbb-ao-vivo2.firebasestorage.app",
+            messagingSenderId: "172632221080",
+            appId: "1:172632221080:web:7e3659ee27e0cea434f7ed"
+        };
+
+        // Inicializa o Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Obtém a instância de autenticação do Firebase
+        const auth = firebase.auth();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+
+        // Referência para o display de mensagens de erro/sucesso
+        const messageDisplay = document.getElementById('message-display');
+        
+        
+                // --- FUNÇÃO PARA MOSTRAR/ESCONDER SENHA (O OLHINHO) ---
+        function togglePasswordVisibility(fieldId, iconElement) {
+            const passwordField = document.getElementById(fieldId);
+            const iconSvg = iconElement.querySelector('svg');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                // Altera o SVG para um "olho cortado" (feather-eye-off)
+                iconSvg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.06 18.06 0 0 1 4.58-5.32M10.49 5.05A10.07 10.07 0 0 1 12 4c7 0 11 8 11 8a18.06 18.06 0 0 1-4.77 5.79M9.91 9.91a3 3 0 1 0 4.18 4.18"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                passwordField.type = 'password';
+                // Altera o SVG de volta para um "olho aberto" (feather-eye)
+                iconSvg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        // --- FUNÇÕES AUXILIARES PARA EXIBIR MENSAGENS ---
+        function showMessage(message, type = 'error') {
+            messageDisplay.innerText = message;
+            messageDisplay.className = ''; // Limpa classes anteriores
+            messageDisplay.classList.add(type);
+            messageDisplay.style.display = 'block';
+        }
+
+        function hideMessage() {
+            messageDisplay.style.display = 'none';
+            messageDisplay.innerText = '';
+        }
+
+        // --- LISTA DE DOMÍNIOS DE E-MAIL PERMITIDOS ---
+        // Maicon, esta é a lista que você pode personalizar!
+        // Domínios mais comuns e confiáveis.
+        const allowedEmailDomains = [
+            'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com', 'live.com',
+            'bol.com.br', 'uol.com.br', 'ig.com.br', 'terra.com.br', 'protonmail.com',
+            // Adicione outros domínios que você considera seguros
+        ];
+
+        // --- FUNÇÃO PARA VALIDAR O DOMÍNIO DO E-MAIL ---
+        function isValidEmailDomain(email) {
+            const domain = email.split('@')[1];
+            if (!domain) return false; // Sem domínio
+            return allowedEmailDomains.includes(domain.toLowerCase());
+        }
+
+        // --- FUNÇÃO PARA ALTERNAR ENTRE ABAS (Entrar / Cadastrar) ---
+        function showTab(tabName) {
+            // Remove a classe 'active' de todos os botões e conteúdos
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Adiciona a classe 'active' ao botão e conteúdo da aba selecionada
+            document.getElementById(`${tabName}-tab-btn`).classList.add('active');
+            document.getElementById(`${tabName}-section`).classList.add('active');
+            
+            hideMessage(); // Limpa qualquer mensagem ao trocar de aba
+        }
+
+        // --- FUNÇÃO PARA REGISTRAR COM E-MAIL E SENHA ---
+        async function handleEmailRegister() {
+            hideMessage();
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+
+            if (!name) {
+                showMessage("Por favor, digite seu nome para o chat.", "error");
+                return;
+            }
+            if (!email ||!password) {
+                showMessage("Por favor, preencha e-mail e senha.", "error");
+                return;
+            }
+            if (password.length < 6) {
+                showMessage("A senha deve ter pelo menos 6 caracteres.", "error");
+                return;
+            }
+
+            // --- VALIDAÇÃO DO DOMÍNIO DO E-MAIL AQUI ---
+            if (!isValidEmailDomain(email)) {
+                showMessage("Este domínio de e-mail não é permitido por motivos de segurança. Por favor, use um e-mail de um provedor conhecido (ex: Gmail, Hotmail, Outlook).", "error");
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // Atualiza o perfil do usuário com o nome fornecido e uma foto de perfil padrão
+                await user.updateProfile({
+                    displayName: name,
+                    photoURL: 'https://cdn-icons-png.flaticon.com/512/149/149071.png' // URL de uma imagem de avatar padrão
+                });
+
+                console.log("Usuário registrado com sucesso!", user);
+                // Redireciona após o registro bem-sucedido
+                openModal(
+                    'Cadastro realizado!',
+                    `Bem-vindo(a), ${user.displayName}! Clique em "Continuar" para acessar o chat.`,
+                    'Continuar',
+                    () => {
+                        window.location.href = 'index.html';
+                    }
+                );
+            } catch (error) {
+                console.error("Erro ao registrar:", error);
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        showMessage("Este e-mail já está em uso. Tente fazer login ou use outro e-mail.", "error");
+                        break;
+                    case 'auth/invalid-email':
+                        showMessage("O formato do e-mail é inválido.", "error");
+                        break;
+                    case 'auth/weak-password':
+                        showMessage("A senha é muito fraca (mínimo de 6 caracteres).", "error");
+                        break;
+                    default:
+                        showMessage("Erro ao criar conta: " + error.message, "error");
+                }
+            }
+        }
+
+        // --- FUNÇÃO PARA FAZER LOGIN COM E-MAIL E SENHA ---
+        async function handleEmailLogin() {
+            hideMessage();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email ||!password) {
+                showMessage("Por favor, preencha e-mail e senha.", "error");
+                return;
+            }
+            // Não validamos o domínio no login, apenas no cadastro.
+
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                console.log("Usuário logado com sucesso!", user);
+
+                openModal(
+                    'Login feito!',
+                    `Bem-vindo(a), ${user.displayName || user.email}! Clique em "Continuar" para acessar o chat.`,
+                    'Continuar',
+                    () => {
+                        window.location.href = 'index.html';
+                    }
+                );
+            } catch (error) {
+                console.error("Erro ao fazer login:", error);
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        showMessage("O formato do e-mail é inválido.", "error");
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                        showMessage("E-mail ou senha incorretos.", "error");
+                        break;
+                    case 'auth/user-disabled':
+                        showMessage("Esta conta foi desativada.", "error");
+                        break;
+                    default:
+                        showMessage("Erro ao fazer login: " + error.message, "error");
+                }
+            }
+        }
+
+        // --- FUNÇÃO PARA LIDAR COM LOGIN GOOGLE (Chamada por ambos os botões do Google) ---
+        async function handleGoogleLogin(isRegisterFlow = false) {
+            hideMessage();
+            let btnId = isRegisterFlow? 'google-register-btn' : 'google-login-btn';
+            const btn = document.getElementById(btnId);
+
+            btn.style.opacity = '0.7';
+            btn.innerHTML = `<svg class="google-icon" viewBox="0 0 48 48">...</svg> Conectando...`; // Mantém o SVG
+
+            try {
+                const result = await auth.signInWithPopup(googleProvider);
+                const user = result.user;
+
+                // Para usuários que acabaram de se registrar com Google pela aba de cadastro,
+                // talvez queiram definir o displayName se não veio um bom do Google.
+                // Mas por enquanto, o Google já fornece displayName e photoURL.
+
+                console.log("Logado com Google:", user);
+                openModal(
+                    'Login feito!',
+                    `Bem-vindo(a), ${user.displayName || user.email}! Clique em "Continuar" para acessar o chat.`,
+                    'Continuar',
+                    () => {
+                        window.location.href = 'index.html';
+                    }
+                );
+
+            } catch (error) {
+                console.error("Erro no login com Google:", error);
+                let errorMessage = "Ocorreu um erro no login. Tente novamente.";
+
+                if (error.code === 'auth/popup-closed-by-user') {
+                    errorMessage = "Login cancelado. Por favor, tente novamente.";
+                } else if (error.code === 'auth/network-request-failed') {
+                    errorMessage = "Erro de conexão. Verifique sua internet.";
+                } else if (error.code === 'auth/cancelled-popup-request') {
+                    console.log("Requisição de popup de login cancelada.");
+                    errorMessage = "A janela de login foi cancelada. Tente novamente.";
+                } else if (error.code === 'auth/account-exists-with-different-credential') {
+                    errorMessage = "Você já tem uma conta com este e-mail, mas usando outro método. Tente fazer login com ele.";
+                }
+
+                showMessage("Erro no login com Google: " + errorMessage, "error");
+                
+            } finally {
+                // Reverter o botão para o estado original
+                btn.style.opacity = '1';
+                if (isRegisterFlow) {
+                    btn.innerHTML = `<svg class="google-icon" viewBox="0 0 48 48">...</svg> Cadastrar com Google`;
+                } else {
+                    btn.innerHTML = `<svg class="google-icon" viewBox="0 0 48 48">...</svg> Entrar com Google`;
+                }
+                // Certifique-se de que o SVG esteja dentro do HTML do botão.
+                // Para simplificar, vou deixar um placeholder, mas você deve ter o SVG completo aqui.
+            }
+        }
+
+        // --- OUVINTE PARA OS BOTÕES DO GOOGLE ---
+        document.getElementById('google-login-btn').addEventListener('click', () => handleGoogleLogin(false));
+        document.getElementById('google-register-btn').addEventListener('click', () => handleGoogleLogin(true));
+
+        // --- FUNÇÕES DO MODAL (Mantidas, mas com ajustes para as novas mensagens) ---
+
+        // Função para abrir o modal com conteúdo personalizado (sem o 'type' de FAQ)
+        function openModal(title = '', message = '', actionText = null, continueCallback = null) {
+            document.getElementById('genericModalContent').style.display = 'block';
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+
+            const modalActionButton = document.getElementById('modalActionButton');
+
+            if (actionText) {
+                modalActionButton.innerText = actionText;
+                modalActionButton.style.display = 'block';
+                modalActionButton.onclick = () => {
+                    closeModal();
+                    if (continueCallback && typeof continueCallback === 'function') {
+                        continueCallback();
+                    }
+                };
+            } else {
+                modalActionButton.style.display = 'none';
+                modalActionButton.onclick = null;
+            }
+
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Sua função closeModal permanece a mesma
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.classList.add('hiding');
+            setTimeout(() => {
+                modal.classList.remove('active');
+                modal.classList.remove('hiding');
+                document.body.style.overflow = '';
+            }, 200);
+        }
+
+        // Adiciona um ouvinte para o botão de fechar do modal
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+
+        // --- Verificação de login ao carregar a página (com redirecionamento para index.html se logado) ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                console.log("Usuário já logado, redirecionando para index.html:", user.displayName || user.email);
+                // Pode exibir uma mensagem de "Já logado, redirecionando..." antes
+                window.location.href = 'index.html';
+            } else {
+                // Certifica-se de que a aba de login esteja ativa por padrão ao carregar
+                showTab('login'); 
+            }
+        });
+
+    </script>
+</body>
+</html>
